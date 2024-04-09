@@ -41,12 +41,11 @@ void x_task(void *p) {
     adc_t data;
     int vec[5] = {0, 0, 0, 0, 0};
     
-    int result;
     while(1) {
         adc_gpio_init(28);
         adc_select_input(2);
 
-        result = conversor(adc_read());
+        int result = conversor(adc_read());
 
         int x = 0;
 
@@ -75,12 +74,11 @@ void y_task(void *p) {
     adc_t data;
     int vec[5] = {0, 0, 0, 0, 0};
 
-    int result;
     while(1) {
         adc_gpio_init(26);
         adc_select_input(0);
 
-        result = conversor(adc_read());
+        int result = conversor(adc_read());
         
         int y = 0;
 
