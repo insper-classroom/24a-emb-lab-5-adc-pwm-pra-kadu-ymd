@@ -21,8 +21,8 @@ typedef struct adc {
 } adc_t;
 
 int conversor(int read) {
-    int result = (int) ((510 * read/4095) - 255);
-
+    int result = ((510 * read/4095) - 255);
+    
     return result;
 }
 
@@ -40,39 +40,34 @@ void write_package(adc_t data) {
 void x_task(void *p) {
     adc_t data;
     int vec[5] = {0, 0, 0, 0, 0};
-
-    adc_gpio_init(28);
     
-    uint16_t result;
+    int result;
     while(1) {
+        adc_gpio_init(28);
         adc_select_input(2);
 
         result = conversor(adc_read());
 
-        int y = 0;
-        vec[0] = vec[1];
-        vec[1] = vec[2];
-        vec[2] = vec[3];
+        int x = 0;
+
+        for(int i = 0; i < 4; i++) vec[i] = vec[i + 1];
+
         vec[4] = result;
 
-        for(int i = 0; i < 5; i++) {
-            y += vec[i];
+        for(int i = 0; i < 5; i++) x += vec[i];
+
+        x /= 5;
+
+        if(x >= -162 && x <= 162) {
+            x = 0;
         }
-
-        y /= 5;
-
-        // if(y >= -162 && y <= 162) {
-        //     y = 0;
-        // }
-
-        printf("%d\n", y);
     
         data.axis = 0;
-        data.val = y;
-        
+        data.val = x;
+
         xQueueSend(xQueueADC, &data, 0);
 
-        vTaskDelay(pdMS_TO_TICKS(150));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -80,37 +75,32 @@ void y_task(void *p) {
     adc_t data;
     int vec[5] = {0, 0, 0, 0, 0};
 
-    adc_gpio_init(26);
-
-    uint16_t result;
+    int result;
     while(1) {
+        adc_gpio_init(26);
         adc_select_input(0);
 
         result = conversor(adc_read());
-
+        
         int y = 0;
-        vec[0] = vec[1];
-        vec[1] = vec[2];
-        vec[2] = vec[3];
+
+        for(int i = 0; i < 4; i++) vec[i] = vec[i + 1];
+
         vec[4] = result;
 
-        for(int i = 0; i < 5; i++) {
-            y += vec[i];
-        }
+        for(int i = 0; i < 5; i++) y += vec[i];
 
         y /= 5;
 
-        // if(y >= -162 && y <= 162) {
-        //     y = 0;
-        // }
-
-        printf("%d\n", y);
+        if(y >= -162 && y <= 162) {
+            y = 0;
+        }
 
         data.axis = 1;
         data.val = y;
         
         xQueueSend(xQueueADC, &data, 0);
-        vTaskDelay(pdMS_TO_TICKS(150));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -140,3 +130,4 @@ int main() {
     while (true)
         ;
 }
+
